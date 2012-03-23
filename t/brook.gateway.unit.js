@@ -86,6 +86,28 @@ test('match',function(){with(ns){
     scatter().bind(p).run([10,11,12]);
 }});
 
+asyncTest('parallel', function() {
+    var p1 = ns.promise(function(next, value) {
+        value.count++;
+        next(value);
+    });
+
+    var p2 = ns.wait(500).bind(ns.promise(function(next, value) {
+        value.count++;
+        next(value); 
+    }));
+
+    var p3 = ns.wait(1000).bind(ns.promise(function(next, value) {
+        value.count++;
+        next(value); 
+    }));
+
+    ns.parallel(p1, p2, p3).bind(function(next, value) {
+        equal(value.count, 3);
+        start();
+    }).run({count: 0});
+});
+
 test('named channel',function(){
     expect(13);
     ns.observeChannel('test-channel',

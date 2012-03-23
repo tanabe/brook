@@ -289,6 +289,23 @@ Namespace('brook.util')
             next(value);
         });
     };
+
+    var parallel = function(/*promises*/) {
+        var promises = Array.prototype.slice.call(arguments);
+        return ns.promise(function(next, value) {
+            var count = 0;
+            for (var i = 0; i < promises.length; i++) {
+                var promise = promises[i];
+                promise.bind(ns.promise(function(n, v) {
+                    n(v);
+                    count++;
+                    if (count >= promises.length) {
+                        next(v);
+                    }
+                })).run(value);
+            }
+        });
+    };
     /**#@-*/
     ns.provide({
         mapper  : mapper,
@@ -303,6 +320,7 @@ Namespace('brook.util')
         lock    : lock,
         unlock  : unlock,
         from    : from,
+        parallel  : parallel,
         waitUntil : waitUntil,
         emitInterval: emitInterval,
         stopEmitInterval: stopEmitInterval
@@ -488,9 +506,7 @@ Namespace('brook.channel')
 */
 Namespace('brook.model')
 .use('brook promise')
-.use('brook.util *')
-.use('brook.channel *')
-.use('brook.lambda *')
+.use('brook.channel createChannel')
 .define(function(ns){
     /**
      * @class brook.model.createModelで生成されるインスタンスのインナークラス
@@ -519,7 +535,7 @@ Namespace('brook.model')
     Model.prototype.notify = function(method){
         return ns.promise().bind( this.methods[method] );
     };
-    Model.prototype.method   = function(method){
+    Model.prototype.method  = function(method){
         if( !this.channels[method] )
             throw('do not observe undefined method');
         return this.channels[method];
@@ -1198,7 +1214,7 @@ Namespace('brook.dom.compat')
         var wrapper = function(element){
             return element.dataset;
         };
-        if( window["HTMLElemenT"] && HTMLElement.prototype ){
+        if( window["HTMLElement"] && HTMLElement.prototype ){
             var proto = HTMLElement.prototype;
             if( proto.dataset ) 
                 return wrapper;
@@ -1279,9 +1295,9 @@ Namespace('brook.dom.compat')
             for (var i = 0; i < this._classList.length; ++i) {
                 if (this._classList[i] == token) {
                     this._classList.splice(i, 1);
-                    this._element.className =  this._classList.join(" ");
                 }
             }
+            this._element.className =  this._classList.join(" ");
             this.length = this._classList.length;
         }
         this.toggle = function (token) {
@@ -1338,9 +1354,9 @@ Namespace('brook.dom.gateway')
 */
 Namespace('brook.widget')
 .use('brook promise')
-.use('brook.channel *')
+.use('brook.channel channel')
 .use('brook.util *')
-.use('brook.dom.compat *')
+.use('brook.dom.compat getElementsByClassName,dataset,classList')
 .define(function(ns){
     var TARGET_CLASS_NAME = 'widget';
 

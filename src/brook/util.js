@@ -161,6 +161,23 @@ Namespace('brook.util')
             next(value);
         });
     };
+
+    var parallel = function(/*promises*/) {
+        var promises = Array.prototype.slice.call(arguments);
+        return ns.promise(function(next, value) {
+            var count = 0;
+            for (var i = 0; i < promises.length; i++) {
+                var promise = promises[i];
+                promise.bind(ns.promise(function(n, v) {
+                    n(v);
+                    count++;
+                    if (count >= promises.length) {
+                        next(v);
+                    }
+                })).run(value);
+            }
+        });
+    };
     /**#@-*/
     ns.provide({
         mapper  : mapper,
@@ -175,6 +192,7 @@ Namespace('brook.util')
         lock    : lock,
         unlock  : unlock,
         from    : from,
+        parallel  : parallel,
         waitUntil : waitUntil,
         emitInterval: emitInterval,
         stopEmitInterval: stopEmitInterval

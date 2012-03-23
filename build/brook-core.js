@@ -289,6 +289,23 @@ Namespace('brook.util')
             next(value);
         });
     };
+
+    var parallel = function(/*promises*/) {
+        var promises = Array.prototype.slice.call(arguments);
+        return ns.promise(function(next, value) {
+            var count = 0;
+            for (var i = 0; i < promises.length; i++) {
+                var promise = promises[i];
+                promise.bind(ns.promise(function(n, v) {
+                    n(v);
+                    count++;
+                    if (count >= promises.length) {
+                        next(v);
+                    }
+                })).run(value);
+            }
+        });
+    };
     /**#@-*/
     ns.provide({
         mapper  : mapper,
@@ -303,6 +320,7 @@ Namespace('brook.util')
         lock    : lock,
         unlock  : unlock,
         from    : from,
+        parallel  : parallel,
         waitUntil : waitUntil,
         emitInterval: emitInterval,
         stopEmitInterval: stopEmitInterval
@@ -488,9 +506,7 @@ Namespace('brook.channel')
 */
 Namespace('brook.model')
 .use('brook promise')
-.use('brook.util *')
-.use('brook.channel *')
-.use('brook.lambda *')
+.use('brook.channel createChannel')
 .define(function(ns){
     /**
      * @class brook.model.createModelで生成されるインスタンスのインナークラス
@@ -519,7 +535,7 @@ Namespace('brook.model')
     Model.prototype.notify = function(method){
         return ns.promise().bind( this.methods[method] );
     };
-    Model.prototype.method   = function(method){
+    Model.prototype.method  = function(method){
         if( !this.channels[method] )
             throw('do not observe undefined method');
         return this.channels[method];

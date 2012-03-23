@@ -14,7 +14,7 @@ Namespace('brook.dom.compat')
         var wrapper = function(element){
             return element.dataset;
         };
-        if( window["HTMLElemenT"] && HTMLElement.prototype ){
+        if( window["HTMLElement"] && HTMLElement.prototype ){
             var proto = HTMLElement.prototype;
             if( proto.dataset ) 
                 return wrapper;
@@ -95,9 +95,9 @@ Namespace('brook.dom.compat')
             for (var i = 0; i < this._classList.length; ++i) {
                 if (this._classList[i] == token) {
                     this._classList.splice(i, 1);
-                    this._element.className =  this._classList.join(" ");
                 }
             }
+            this._element.className =  this._classList.join(" ");
             this.length = this._classList.length;
         }
         this.toggle = function (token) {

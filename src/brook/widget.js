@@ -10,9 +10,9 @@
 */
 Namespace('brook.widget')
 .use('brook promise')
-.use('brook.channel *')
+.use('brook.channel channel')
 .use('brook.util *')
-.use('brook.dom.compat *')
+.use('brook.dom.compat getElementsByClassName,dataset,classList')
 .define(function(ns){
     var TARGET_CLASS_NAME = 'widget';
 

@@ -10,9 +10,7 @@
 */
 Namespace('brook.model')
 .use('brook promise')
-.use('brook.util *')
-.use('brook.channel *')
-.use('brook.lambda *')
+.use('brook.channel createChannel')
 .define(function(ns){
     /**
      * @class brook.model.createModelで生成されるインスタンスのインナークラス
@@ -41,7 +39,7 @@ Namespace('brook.model')
     Model.prototype.notify = function(method){
         return ns.promise().bind( this.methods[method] );
     };
-    Model.prototype.method   = function(method){
+    Model.prototype.method  = function(method){
         if( !this.channels[method] )
             throw('do not observe undefined method');
         return this.channels[method];
